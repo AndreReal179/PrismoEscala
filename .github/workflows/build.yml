@@ -5,6 +5,9 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -31,14 +34,28 @@ jobs:
           DIR=$(dirname "$ARQ")
           echo "Projeto encontrado em: $DIR"
           echo "PROJ=$DIR" >> $GITHUB_ENV
+          VER=$(grep -oP 'versionName\s*=\s*"\K[^"]+' "$DIR/app/build.gradle.kts")
+          echo "Versão: $VER"
+          echo "VER=$VER" >> $GITHUB_ENV
 
       - name: Compilar APK
         run: |
           cd "$PROJ"
           gradle assembleRelease --no-daemon --stacktrace
           cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/PrismoEscala.apk"
+          if [ -f NOVIDADES.md ]; then cp NOVIDADES.md "$GITHUB_WORKSPACE/notas.md"; else echo "Melhorias e correções." > "$GITHUB_WORKSPACE/notas.md"; fi
 
       - uses: actions/upload-artifact@v4
         with:
           name: PrismoEscala-APK
           path: PrismoEscala.apk
+
+      # Publica a versão no Releases: é daqui que o app busca as atualizações
+      - name: Publicar release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VER }}
+          name: Prismo Escala ${{ env.VER }}
+          body_path: notas.md
+          files: PrismoEscala.apk
+          make_latest: true
