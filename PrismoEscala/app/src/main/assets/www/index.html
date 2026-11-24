@@ -218,6 +218,14 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .notas li{margin:0 0 6px 18px}
 .notas p{margin-bottom:6px}
 .ganho{color:#86EFAC;font-weight:700}
+.cel .pag{position:absolute;top:3px;left:4px;font-size:10px;line-height:1;filter:drop-shadow(0 1px 1px rgba(0,0,0,.5))}
+.pag-card{border-radius:18px;padding:14px;margin-top:8px;background:linear-gradient(135deg,rgba(34,197,94,.16),rgba(20,184,166,.08));border:1px solid rgba(34,197,94,.35)}
+.pag-card .h{display:flex;align-items:center;gap:10px}
+.pag-card .q{width:40px;height:40px;border-radius:13px;background:#22C55E;color:#06240F;display:grid;place-items:center;flex:none;font-size:20px}
+.pag-card b{font-size:15.5px}
+.pag-card .v{font-size:24px;font-weight:800;color:#86EFAC;margin-top:8px;letter-spacing:-.4px}
+.pag-card .m{color:#BBF7D0;font-size:12.5px;margin-top:2px}
+.pag-linha{display:flex;justify-content:space-between;font-size:13px;color:#C9D3EE;padding:6px 0;border-top:1px solid rgba(255,255,255,.07)}
 .prog{height:10px;border-radius:9px;background:var(--s3);overflow:hidden;margin:6px 0 8px}
 .prog i{display:block;height:100%;width:0;border-radius:9px;background:linear-gradient(90deg,var(--pri),var(--pri2));transition:width .25s}
 #nav button.on .pill{background:rgba(109,124,255,.2);color:#C7D0FF}
@@ -396,12 +404,12 @@ const feriado=d=>S.config.feriados?feriados(parts(d)[0])[d]||null:null;
 
 /* ============ ESTADO ============ */
 const KEY='prismo_escala_v1';
-function padrao(){return{versao:1,onboarding:false,nome:'',escalas:[],excecoes:{},eventos:[],checklist:ckPadrao(),checks:{},config:{feriados:true,notif:{ckEntrada:true,ckSaida:30,ativo:true,antes:60,sono:true,horasSono:8,preparo:60,vespera:true,horaVespera:'20:00',fim:false,resumo:false,horaResumo:'07:00'}}}}
+function padrao(){return{versao:1,onboarding:false,nome:'',escalas:[],excecoes:{},eventos:[],checklist:ckPadrao(),checks:{},config:{feriados:true,pag:{ativo:true,diaUtil:5,modo:'plantao',fixo:0,hora:'09:00'},notif:{ckEntrada:true,ckSaida:30,ativo:true,antes:60,sono:true,horasSono:8,preparo:60,vespera:true,horaVespera:'20:00',fim:false,resumo:false,horaResumo:'07:00'}}}}
 let S;
 function ckPadrao(){const m=a=>a.map(t=>({id:uid(),texto:t}));return{
  entrada:m(['Bater o ponto de entrada','Receber a passagem de plantão','Ler o livro de ocorrências / recados','Conferir materiais e equipamentos','Verificar uniforme e EPI']),
  saida:m(['Registrar ocorrências do plantão','Organizar o posto de trabalho','Repor materiais usados','Passar o plantão para o próximo colega','Bater o ponto de saída'])}}
-function normalizar(o){const p=padrao();o=Object.assign(p,o||{});o.config=Object.assign(padrao().config,o.config||{});o.config.notif=Object.assign(padrao().config.notif,o.config.notif||{});o.escalas=o.escalas||[];o.eventos=o.eventos||[];o.excecoes=o.excecoes||{};o.checks=o.checks||{};if(!o.checklist||!Array.isArray(o.checklist.entrada))o.checklist=ckPadrao();return o}
+function normalizar(o){const p=padrao();o=Object.assign(p,o||{});o.config=Object.assign(padrao().config,o.config||{});o.config.pag=Object.assign(padrao().config.pag,o.config.pag||{});o.config.notif=Object.assign(padrao().config.notif,o.config.notif||{});o.escalas=o.escalas||[];o.eventos=o.eventos||[];o.excecoes=o.excecoes||{};o.checks=o.checks||{};if(!o.checklist||!Array.isArray(o.checklist.entrada))o.checklist=ckPadrao();return o}
 function carregar(){let raw=null;try{if(NAT&&NAT.lerDados)raw=NAT.lerDados()}catch(e){}
  if(!raw)try{raw=localStorage.getItem(KEY)}catch(e){}
  try{S=normalizar(raw?JSON.parse(raw):null)}catch(e){S=padrao()}}
@@ -453,6 +461,7 @@ function gerarNotificacoes(){
    if(c.fim)add('f'+d,g.fim,'plantao','Plantão encerrado ✅','Bom descanso! Você merece.')
   }
   if(c.vespera){const t=toMs(addD(d,-1),c.horaVespera);const ev=eventosDoDia(d);if(g.trabalha||ev.length)add('v'+d,t,'resumo',g.trabalha?'Amanhã tem plantão':'Amanhã',resumoTexto(d))}
+  const pgd=pagamentoNoDia(d);if(pgd&&c.ativo)add('p'+d,toMs(d,S.config.pag.hora||'09:00'),'resumo','Dia de pagamento 💰',`${pgd.valor?brl(pgd.valor)+' ':''}referente a ${MESES[pgd.refM-1].toLowerCase()} (${pgd.plantoes} plantões). Confira sua conta!`,'resumo');
   if(c.resumo)add('r'+d,toMs(d,c.horaResumo),'resumo','Seu dia hoje',resumoTexto(d))
  }
  const lim=addD(h,120);
@@ -513,8 +522,22 @@ function gradeHTML(){
  for(let i=0;i<rows*7;i++){const d=addD(start,i),[,m,dd]=parts(d),g=getDia(d),evs=eventosDoDia(d),fer=feriado(d);
   const mud=S.escalas.some(e=>e.inicio===d&&e!==primeira);
   const cls=['cel',g.trabalha?'trab':'',g.trabalha&&g.especial?'esp':'',m!==vM?'fora':'',d<h0?'pass':'',d===h0?'hoje':'',d===sel?'sel':'',fer?'fer':''].join(' ');
-  h+=`<button class="${cls}" data-d="${d}"><span class="n">${dd}</span>${g.trabalha?`<span class="hr">${hc(g.entrada)}–${hc(g.saida)}</span>`:''}<span class="dots">${evs.slice(0,3).map(e=>`<i style="background:${(TIPOS[e.tipo]||TIPOS.outro).cor}"></i>`).join('')}</span>${g.excecao?'<b class="mk"></b>':''}${mud?'<b class="mud"></b>':''}</button>`}
+  h+=`<button class="${cls}" data-d="${d}"><span class="n">${dd}</span>${g.trabalha?`<span class="hr">${hc(g.entrada)}–${hc(g.saida)}</span>`:''}<span class="dots">${evs.slice(0,3).map(e=>`<i style="background:${(TIPOS[e.tipo]||TIPOS.outro).cor}"></i>`).join('')}</span>${g.excecao?'<b class="mk"></b>':''}${pagamentoNoDia(d)?'<span class="pag">💰</span>':''}${mud?'<b class="mud"></b>':''}</button>`}
  return h}
+/* ---------- PAGAMENTO (Nº dia útil do mês seguinte) ---------- */
+function diaUtil(y,m,n){const f=feriados(y);let c=0;for(let d=1;d<=31;d++){const s=ds(y,m,d);if(parts(s)[1]!==m||d>new Date(y,m,0).getDate())break;if(wd(s)===0)continue;const fe=f[s];if(fe&&fe!=='Carnaval')continue;if(++c>=n)return s}return ds(y,m,new Date(y,m,0).getDate())}
+const mesAnt=(y,m)=>m===1?[y-1,12]:[y,m-1],mesProx=(y,m)=>m===12?[y+1,1]:[y,m+1];
+function pagamentoDe(y,m){/* pagamento referente ao mês trabalhado y/m */const P=S.config.pag,[py,pm]=mesProx(y,m),data=diaUtil(py,pm,+P.diaUtil||5);
+ const st=statsMes(y,m);const valor=P.modo==='fixo'?(+P.fixo||0):st.ganho;const vu=st.t?Math.round(st.ganho/st.t*100)/100:0;
+ return{data,refY:y,refM:m,plantoes:st.t,horas:Math.round(st.min/60),valor,porPlantao:vu,fixo:P.modo==='fixo'}}
+function pagamentoNoDia(d){if(!S.config.pag.ativo)return null;const[y,m]=parts(d);const[ry,rm]=mesAnt(y,m);if(diaUtil(y,m,+S.config.pag.diaUtil||5)!==d)return null;return pagamentoDe(ry,rm)}
+function proximoPagamento(){const h=hojeStr(),[y,m]=parts(h);const[ay,am]=mesAnt(y,m);let p=pagamentoDe(ay,am);if(p.data<h)p=pagamentoDe(y,m);return p}
+function pagCardHTML(p,titulo){const hoje=p.data===hojeStr();const nm=MESES[p.refM-1].toLowerCase();
+ return `<div class="pag-card"><div class="h"><span class="q">💰</span><div><b>${titulo||(hoje?'Hoje é dia de pagamento!':'Dia de pagamento')}</b><div class="m">${DAB[wd(p.data)]}, ${fmtD(p.data)} · ${S.config.pag.diaUtil}º dia útil · referente a ${nm}</div></div></div>
+ ${p.valor?`<div class="v">${brl(p.valor)}</div>`:`<div class="m" style="margin-top:8px">Defina o ganho por plantão ou o salário em Ajustes para ver o valor.</div>`}
+ <div class="pag-linha" style="margin-top:8px"><span>Plantões em ${nm}</span><b>${p.plantoes} · ${p.horas}h</b></div>
+ ${p.fixo?`<div class="pag-linha"><span>Forma</span><b>Salário fixo</b></div>`:p.porPlantao?`<div class="pag-linha"><span>Valor por plantão</span><b>${brl(p.porPlantao)}</b></div>`:''}</div>`}
+
 function statsMes(y,m){const dim=new Date(y,m,0).getDate();let t=0,min=0,folgas=0,esp=0,aj=0;const evs={servico:0,consulta:0,compromisso:0,outro:0};let val=0,rec=0,ganho=0,ganhoAte=0,tAte=0;const hj=hojeStr();
  for(let d=1;d<=dim;d++){const s=ds(y,m,d),g=getDia(s);if(g.trabalha){t++;min+=g.min;ganho+=g.valor;if(s<=hj){ganhoAte+=g.valor;tAte++}if(g.especial)esp++}else if(g.escala)folgas++;if(g.excecao)aj++}
  const ini=ds(y,m,1),fim=ds(y,m,dim);S.eventos.forEach(e=>{if(e.inicio>=ini&&e.inicio<=fim){evs[e.tipo]=(evs[e.tipo]||0)+1;if(e.tipo==='servico'){val+=+e.valor||0;if(e.pago)rec+=+e.valor||0}}});
@@ -529,7 +552,7 @@ function painelDia(d){
  if(g.excecao)tags.push(`<span class="tag w">Ajustado${g.excecao.nota?': '+esc(g.excecao.nota):''}</span>`);
  if(g.escala&&g.escala.inicio===d&&g.escala!==escalasOrd()[0])tags.push(`<span class="tag g">Nova escala começa aqui</span>`);
  if(g.trabalha&&ant.trabalha&&ant.vira&&ant.fim>g.ini)tags.push('<span class="tag w">Plantões emendados</span>');
- const lst=evs.map(evHTML).join('');
+ const pgd=pagamentoNoDia(d);const lst=(pgd?pagCardHTML(pgd):'')+evs.map(evHTML).join('');
  return `<div class="dia-h"><div><h3>${fmtDL(d)}</h3><small>${relDia(d)==='Hoje'?'Hoje':fmtD(d)}</small></div></div>
  <div class="card">${st}${tags.length?`<div class="tags">${tags.join('')}</div>`:''}</div>${lst}
  <div class="acoes"><button class="btn pri" data-act="novo">${ic('plus',18)} Adicionar</button><button class="btn" data-act="ajustar">${ic('edit',18)} Ajustar dia</button><button class="btn full sm" data-act="mudar">${ic('repeat',16)} Mudar escala a partir deste dia</button></div>`}
@@ -628,6 +651,9 @@ function telaResumo(){
  // semanas
  const h=hojeStr(),ini=addD(h,-wd(h));let barras='';for(let i=0;i<7;i++){const d=addD(ini,i),g=getDia(d);const pct=g.trabalha?Math.min(100,g.min/24*100/60*1):0;barras+=`<div class="sb"><i><em style="height:${pct}%"></em></i>${DC[i]}<br>${g.trabalha?Math.round(g.min/60)+'h':'–'}</div>`}
  return `<div><div class="topo"><div><h1>Resumo</h1><div class="sub">${MESES[rM-1]} de ${rY}</div></div><div style="display:flex;gap:6px"><button class="btn-ic" id="rAnt">${ic('chevL')}</button><button class="btn-ic" id="rProx">${ic('chevR')}</button></div></div>
+ ${S.config.pag.ativo&&rY===parts(hojeStr())[0]&&rM===parts(hojeStr())[1]?(()=>{const p=proximoPagamento(),[ny,nm]=mesProx(rY,rM),fut=pagamentoDe(rY,rM);
+   return pagCardHTML(p,'Próximo pagamento')+(p.refM!==rM?`<div class="card" style="margin-top:8px;margin-bottom:12px"><div class="st"><div class="ico n">${ic('clock',22)}</div><div><b>${MESES[rM-1]} em andamento</b><div class="m">${fut.plantoes} plantões${fut.valor?' · '+brl(fut.valor):''} · cai em ${fmtD(fut.data)}</div></div></div></div>`:'<div style="height:12px"></div>')})()
+  :S.config.pag.ativo?(()=>{const p=pagamentoDe(rY,rM);return pagCardHTML(p,`Pagamento de ${MESES[rM-1].toLowerCase()}`)+'<div style="height:12px"></div>'})():''}
  <div class="big-card"><div class="l">Horas de plantão no mês</div><div class="v">${Math.round(s.min/60)}h${s.min%60?' '+Math.round(s.min%60)+'min':''}</div><div class="c">${s.t} plantões · ${s.folgas} folgas${dif?` · ${dif>0?'+':''}${dif}h vs ${MESES[pm-1].toLowerCase()}`:''}</div></div>
  ${s.ganho||s.val?`<div class="big-card" style="background:linear-gradient(135deg,#0F2A22,#13203F);border-color:rgba(34,197,94,.3)"><div class="l" style="color:#86EFAC">Previsão de ganhos no mês</div><div class="v">${brl(s.ganho+s.val)}</div><div class="c">Plantões ${brl(s.ganho)} · Extras ${brl(s.val)}</div>
  ${s.ganho?`<div class="bar" style="margin-top:12px"><i style="width:${(s.ganhoAte/s.ganho*100).toFixed(1)}%"></i></div><div class="c" style="margin-top:6px">Já trabalhado: ${brl(s.ganhoAte)} (${s.tAte} de ${s.t} plantões)</div>`:''}</div>`
@@ -660,6 +686,14 @@ function telaAjustes(){
  <button class="item" id="aIni"><span class="q">${ic('flag',18)}</span><div class="tx"><b>Comecei a trabalhar em</b><small>${(()=>{const f=escalasOrd()[0];return f.inicio<='2020-01-01'?'Não definido: a escala aparece em todo o calendário':fmtD(f.inicio)+' · antes disso fica sem escala'})()}</small></div>${ic('chevR',18)}</button></div>`:''}
  <div class="aviso info" style="margin-top:10px">${ic('hist')}<div><b>Mudar escala</b> cria uma nova a partir da data que você escolher. Os dias anteriores continuam com a escala antiga. <b>Corrigir</b> altera a escala atual inteira.</div></div>
  ${ord.length?`<div class="sec-t">Histórico de escalas</div><div class="lista hist">${hist}</div>`:''}
+ <div class="sec-t">Pagamento</div>
+ <div class="lista">
+  <div class="item"><span class="q" style="color:#86EFAC">${ic('money',18)}</span><div class="tx"><b>Mostrar dia de pagamento</b><small>Marca 💰 no calendário e avisa no dia</small></div>${sw('pAtivo',S.config.pag.ativo)}</div>
+  <div class="item"><span class="q">${ic('cal',18)}</span><div class="tx"><b>Recebo no</b><small>Do mês seguinte, contando seg. a sáb. sem feriados</small></div><select id="pDia">${opts([1,2,3,4,5,6,7,8,9,10].map(n=>[n,n+'º dia útil']),S.config.pag.diaUtil)}</select></div>
+  <div class="item"><span class="q">${ic('brief',18)}</span><div class="tx"><b>Forma de pagamento</b><small>${S.config.pag.modo==='fixo'?'Valor fixo todo mês':'Plantões do mês × valor do plantão'}</small></div><select id="pModo">${opts([['plantao','Por plantão'],['fixo','Salário fixo']],S.config.pag.modo)}</select></div>
+  ${S.config.pag.modo==='fixo'?`<div class="item"><span class="q" style="opacity:0"></span><div class="tx"><b>Salário mensal</b></div><input class="inp" id="pFixo" type="number" inputmode="decimal" step="0.01" value="${+S.config.pag.fixo||''}" placeholder="R$ 0,00" style="max-width:130px;padding:9px 11px;text-align:right"></div>`:''}
+  ${S.config.pag.ativo?(()=>{const p=proximoPagamento();return `<div class="item"><span class="q">💰</span><div class="tx"><b>Próximo: ${DAB[wd(p.data)]}, ${fmtD(p.data)}</b><small>Referente a ${MESES[p.refM-1].toLowerCase()} · ${p.plantoes} plantões${p.valor?' · '+brl(p.valor):''}</small></div></div>`})():''}
+ </div>
  <div class="sec-t">Notificações</div>
  ${NAT&&(!p.notif||!p.exato||!p.bat)?`<div class="aviso">${ic('alert')}<div>Para os avisos chegarem na hora certa, libere: ${!p.notif?'<b>notificações</b> ':''}${!p.exato?'<b>alarmes exatos</b> ':''}${!p.bat?'<b>uso de bateria sem restrição</b>':''}</div></div>`:''}
  <div class="lista">
@@ -703,6 +737,8 @@ ligar.ajustes=function(){
  on('novaEsc',()=>formEscala(S.escalas.length?'novo':'primeira',S.escalas.length?addD(hojeStr(),1):hojeStr()),'click');
  on('edAtual',()=>formEscala('editar',null,escalaAtual()),'click');
  on('bExp',exportar,'click');
+ on('pAtivo',e=>{S.config.pag.ativo=e.target.checked;salvar();render()});on('pDia',e=>{S.config.pag.diaUtil=+e.target.value;salvar();render()});
+ on('pModo',e=>{S.config.pag.modo=e.target.value;salvar();render()});on('pFixo',e=>{S.config.pag.fixo=+String(e.target.value).replace(',','.')||0;salvar();render()},'change');
  on('aVal',e=>{const a=escalaAtual();if(!a)return;a.valor=+String(e.target.value).replace(',','.')||0;salvar();toast(a.valor?`Plantão valendo ${brl(a.valor)}`:'Ganho removido')},'change');
  on('aIni',()=>formEscala('editar',null,escalasOrd()[0]),'click');on('uVer',()=>checarAtualizacao(true),'click');on('uAbrir',()=>popupAtualizacao(atu),'click');on('uAuto',e=>{S.config.autoAtualizar=e.target.checked;salvar()});on('bImp',importar,'click');
  document.querySelectorAll('[data-esc]').forEach(b=>b.onclick=()=>formEscala('editar',null,S.escalas.find(e=>e.id===b.dataset.esc)))};
@@ -880,7 +916,7 @@ function desenharPermOb(){const el=$('#obPerm');if(!el)return;const p=statusPerm
 /* ============ ATUALIZAÇÕES ============ */
 let atu=null,atuManual=false,atuBaixando=false,atuEsperaPerm=false;
 const LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
-function versaoApp(){try{return NAT&&NAT.versao?NAT.versao():'1.2'}catch(e){return'1.2'}}
+function versaoApp(){try{return NAT&&NAT.versao?NAT.versao():'1.3'}catch(e){return'1.3'}}
 function textoUltimaVerif(){const t=+LS('atu_ultima')||0;if(!t)return'nunca verificado';const m=(Date.now()-t)/6e4;return m<2?'verificado agora':m<60?`verificado há ${Math.round(m)} min`:m<1440?`verificado há ${Math.round(m/60)} h`:`verificado em ${fmtD(msDate(t))}`}
 function marcarBadge(){const p=document.querySelector('#nav [data-t="ajustes"] .pill');if(!p)return;let b=p.querySelector('.bdg');const on=!!(atu&&atu.nova);if(on&&!b){b=document.createElement('i');b.className='bdg';p.appendChild(b)}if(!on&&b)b.remove()}
 function checarAtualizacao(manual){atuManual=!!manual;
