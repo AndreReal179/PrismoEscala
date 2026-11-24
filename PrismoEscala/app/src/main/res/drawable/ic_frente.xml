@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- corpo do calendário -->
+    <path android:fillColor="#FFFFFF"
+        android:pathData="M34,34h40a6,6 0 0 1 6,6v34a6,6 0 0 1 -6,6h-40a6,6 0 0 1 -6,-6v-34a6,6 0 0 1 6,-6z" />
+    <!-- faixa superior -->
+    <path android:fillColor="#1E1B4B"
+        android:pathData="M34,34h40a6,6 0 0 1 6,6v6h-52v-6a6,6 0 0 1 6,-6z" />
+    <!-- argolas -->
+    <path android:fillColor="#FFFFFF" android:pathData="M40,28h4v10h-4z M64,28h4v10h-4z" />
+    <!-- dias: alternância trabalho/folga (12x36) -->
+    <path android:fillColor="#6D7CFF"
+        android:pathData="M34,52h9v8h-9z M54,52h9v8h-9z M44,64h9v8h-9z M64,64h9v8h-9z" />
+    <path android:fillColor="#C7CDFE"
+        android:pathData="M44,52h9v8h-9z M64,52h9v8h-9z M34,64h9v8h-9z M54,64h9v8h-9z" />
+</vector>
