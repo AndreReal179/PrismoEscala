@@ -1,0 +1,4 @@
+- **Prévia de ganhos:** defina quanto vale cada plantão e veja a previsão do mês e quanto já foi trabalhado
+- **Data de início:** a escala passa a contar a partir do dia em que você começou a trabalhar
+- **Dias que já passaram** aparecem mais apagados no calendário
+- **Atualizações automáticas:** o app avisa quando sai uma versão nova e instala sem sair dele

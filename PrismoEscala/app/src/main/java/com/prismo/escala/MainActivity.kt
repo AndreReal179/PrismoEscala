@@ -242,6 +242,32 @@ class MainActivity : Activity() {
         }
 
         @JavascriptInterface
+        fun verificarAtualizacao(repo: String) {
+            Atualizador.verificar(repo, versao()) { json ->
+                runOnUiThread { web.evaluateJavascript("window.aoAtualizacao&&window.aoAtualizacao($json)", null) }
+            }
+        }
+
+        @JavascriptInterface
+        fun podeInstalar(): Boolean = packageManager.canRequestPackageInstalls()
+
+        @JavascriptInterface
+        fun abrirPermissaoInstalar() {
+            runOnUiThread {
+                try {
+                    startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
+                } catch (e: Exception) {}
+            }
+        }
+
+        @JavascriptInterface
+        fun atualizar(url: String) {
+            Atualizador.baixarEInstalar(this@MainActivity, url,
+                { p -> runOnUiThread { web.evaluateJavascript("window.aoProgressoAtualizacao&&window.aoProgressoAtualizacao($p)", null) } },
+                { m -> runOnUiThread { web.evaluateJavascript("window.aoErroAtualizacao&&window.aoErroAtualizacao(${JSONObject.quote(m)})", null) } })
+        }
+
+        @JavascriptInterface
         fun versao(): String = try {
             packageManager.getPackageInfo(packageName, 0).versionName ?: "1.0"
         } catch (e: Exception) { "1.0" }

@@ -20,3 +20,10 @@ Aumente `versionCode` e `versionName` em `app/build.gradle.kts`.
 - `MainActivity.kt` — WebView + ponte com o Android (permissões, backup, vibração)
 - `Agendador.kt` — agenda as notificações com AlarmManager (funcionam com o app fechado)
 - `BootReceiver.kt` — reagenda depois de reiniciar o celular
+
+## Atualizações automáticas
+- A cada push, o workflow publica um Release `v<versionName>` com o `PrismoEscala.apk`.
+- O app consulta `https://api.github.com/repos/AndreReal179/PrismoEscala/releases/latest`
+  (constante `REPO` no `index.html`). O repositório precisa ser **público**.
+- Para lançar versão nova: aumente `versionCode`/`versionName` em `app/build.gradle.kts`
+  e escreva as novidades em `NOVIDADES.md`.
