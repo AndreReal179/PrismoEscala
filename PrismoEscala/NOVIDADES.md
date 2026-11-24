@@ -1,4 +1,5 @@
-- **Prévia de ganhos:** defina quanto vale cada plantão e veja a previsão do mês e quanto já foi trabalhado
-- **Data de início:** a escala passa a contar a partir do dia em que você começou a trabalhar
-- **Dias que já passaram** aparecem mais apagados no calendário
-- **Atualizações automáticas:** o app avisa quando sai uma versão nova e instala sem sair dele
+- **Dia de pagamento 💰:** o 5º dia útil de cada mês aparece no calendário (sábado conta, domingos e feriados não)
+- **Valor do pagamento:** soma os plantões do mês anterior × o valor do plantão (ou salário fixo, se preferir)
+- **Resumo:** card "Próximo pagamento" com data, valor e quantos plantões ele cobre
+- **Notificação** no dia do pagamento
+- Prévia de ganhos por plantão, data de início no trabalho e dias passados mais apagados
