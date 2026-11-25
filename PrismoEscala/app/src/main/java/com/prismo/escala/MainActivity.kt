@@ -15,6 +15,10 @@ import android.os.PowerManager
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.provider.Settings
+import android.speech.RecognizerIntent
+import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
+import java.util.Locale
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -30,11 +34,14 @@ class MainActivity : Activity() {
     private var exportPendente: String? = null
     private var abaPendente: String? = null
     private var paginaPronta = false
+    private var tts: TextToSpeech? = null
+    private var ttsPronto = false
 
     companion object {
         private const val REQ_EXPORT = 21
         private const val REQ_IMPORT = 22
         private const val REQ_NOTIF = 23
+        private const val REQ_VOZ = 24
         private const val PREFS_DADOS = "dados"
     }
 
@@ -71,8 +78,33 @@ class MainActivity : Activity() {
         }
         web.addJavascriptInterface(Ponte(), "Android")
         setContentView(web)
+        iniciarVoz()
         abaPendente = intent?.getStringExtra("aba")
         web.loadUrl("file:///android_asset/www/index.html")
+    }
+
+    private fun iniciarVoz() {
+        tts = TextToSpeech(this) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                val r = tts?.setLanguage(Locale("pt", "BR")) ?: TextToSpeech.LANG_NOT_SUPPORTED
+                ttsPronto = r != TextToSpeech.LANG_MISSING_DATA && r != TextToSpeech.LANG_NOT_SUPPORTED
+                tts?.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                    override fun onStart(id: String?) {}
+                    override fun onDone(id: String?) { fimDaFala() }
+                    @Deprecated("Deprecated in Java")
+                    override fun onError(id: String?) { fimDaFala() }
+                })
+            }
+        }
+    }
+
+    private fun fimDaFala() {
+        runOnUiThread { web.evaluateJavascript("window.aoFalarFim&&window.aoFalarFim()", null) }
+    }
+
+    override fun onDestroy() {
+        try { tts?.stop(); tts?.shutdown() } catch (e: Exception) {}
+        super.onDestroy()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -119,6 +151,11 @@ class MainActivity : Activity() {
                 } catch (e: Exception) {}
             }
             if (resultCode == RESULT_OK) web.evaluateJavascript("window.aoExportar&&window.aoExportar($ok)", null)
+        } else if (requestCode == REQ_VOZ) {
+            val txt = if (resultCode == RESULT_OK)
+                data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull() else null
+            val arg = if (txt.isNullOrBlank()) "null" else JSONObject.quote(txt)
+            web.evaluateJavascript("window.aoOuvir&&window.aoOuvir($arg)", null)
         } else if (requestCode == REQ_IMPORT && resultCode == RESULT_OK && uri != null) {
             try {
                 val txt = contentResolver.openInputStream(uri)?.bufferedReader(Charsets.UTF_8)?.use { it.readText() } ?: ""
@@ -266,6 +303,35 @@ class MainActivity : Activity() {
                 { p -> runOnUiThread { web.evaluateJavascript("window.aoProgressoAtualizacao&&window.aoProgressoAtualizacao($p)", null) } },
                 { m -> runOnUiThread { web.evaluateJavascript("window.aoErroAtualizacao&&window.aoErroAtualizacao(${JSONObject.quote(m)})", null) } })
         }
+
+        @JavascriptInterface
+        fun ouvir(prompt: String) {
+            runOnUiThread {
+                val i = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                    putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                    putExtra(RecognizerIntent.EXTRA_LANGUAGE, "pt-BR")
+                    putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, "pt-BR")
+                    putExtra(RecognizerIntent.EXTRA_PROMPT, prompt)
+                    putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+                }
+                try {
+                    startActivityForResult(i, REQ_VOZ)
+                } catch (e: Exception) {
+                    Toast.makeText(ctx, "Reconhecimento de voz indisponível. Instale/atualize o app Google.", Toast.LENGTH_LONG).show()
+                    web.evaluateJavascript("window.aoOuvir&&window.aoOuvir(null)", null)
+                }
+            }
+        }
+
+        @JavascriptInterface
+        fun falar(texto: String) {
+            val t = tts
+            if (t == null || !ttsPronto) { fimDaFala(); return }
+            t.speak(texto, TextToSpeech.QUEUE_FLUSH, null, "fala_" + System.currentTimeMillis())
+        }
+
+        @JavascriptInterface
+        fun pararFala() { try { tts?.stop() } catch (e: Exception) {} }
 
         @JavascriptInterface
         fun versao(): String = try {
