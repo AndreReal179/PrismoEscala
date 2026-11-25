@@ -1,5 +1,3 @@
-- **Dia de pagamento 💰:** o 5º dia útil de cada mês aparece no calendário (sábado conta, domingos e feriados não)
-- **Valor do pagamento:** soma os plantões do mês anterior × o valor do plantão (ou salário fixo, se preferir)
-- **Resumo:** card "Próximo pagamento" com data, valor e quantos plantões ele cobre
-- **Notificação** no dia do pagamento
-- Prévia de ganhos por plantão, data de início no trabalho e dias passados mais apagados
+- **Assistente de voz 🎙️:** toque no microfone e fale, por exemplo, "agende academia dia 28 de novembro". Se faltar o horário, ele pergunta "de que horas até que horas?" e responde em voz alta
+- Também responde: "o que tenho amanhã?", "quando é meu próximo plantão?" e "quando eu recebo?"
+- **Eventos no calendário:** o nome do evento agora aparece no quadrinho do dia, junto com o horário do plantão
