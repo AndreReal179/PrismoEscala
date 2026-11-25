@@ -53,11 +53,13 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .chip-hoje{font-size:13px;font-weight:650;padding:7px 12px;border-radius:10px;background:var(--s3);color:#C7D0FF}
 .sem{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:11px;color:var(--mu2);font-weight:700;padding-bottom:6px;letter-spacing:.5px}
 .grade{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;touch-action:pan-y}
-.cel{position:relative;aspect-ratio:1/1.12;border-radius:12px;background:var(--s2);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:6px;overflow:hidden;transition:transform .12s}
+.cel{position:relative;aspect-ratio:1/1.34;border-radius:12px;background:var(--s2);display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:6px;overflow:hidden;transition:transform .12s}
 .cel:active{transform:scale(.94)}
 .cel .n{font-size:15px;font-weight:650}
 .cel .hr{font-size:9.5px;font-weight:650;opacity:.92;margin-top:1px;white-space:nowrap}
-.cel .dots{position:absolute;bottom:5px;display:flex;gap:3px}
+.cel .dots{position:absolute;bottom:4px;display:flex;gap:3px}
+.cel .evc{display:block;width:calc(100% - 6px);margin-top:3px;padding:1px 3px;border-radius:5px;font-size:8.5px;font-weight:750;line-height:1.25;color:#0A0E16;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.cel.trab .evc{box-shadow:0 0 0 1px rgba(255,255,255,.35)}
 .cel .dots i{width:5px;height:5px;border-radius:50%}
 .cel.trab{background:linear-gradient(160deg,var(--trab),var(--trab2));color:#fff;box-shadow:0 4px 14px -6px rgba(59,130,246,.7)}
 .cel.trab.esp{background:linear-gradient(160deg,#8B5CF6,#6D28D9)}
@@ -204,6 +206,21 @@ svg.i{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke
 .pill-ok{font-size:11.5px;font-weight:700;padding:4px 8px;border-radius:8px;background:var(--s3);color:var(--mu);display:flex;align-items:center;gap:4px}
 .pill-ok.ok{background:rgba(34,197,94,.15);color:#86EFAC}
 .pill-ok.meio{background:rgba(251,191,36,.13);color:#FCD34D}
+/* assistente de voz */
+#mic{position:fixed;z-index:21;right:calc(max(18px,calc(50% - 262px)) + 70px);bottom:calc(88px + var(--safe-b));width:50px;height:50px;border-radius:17px;display:grid;place-items:center;color:#E9EDFF;background:var(--s3);border:1px solid rgba(109,124,255,.45);box-shadow:0 10px 24px -12px rgba(0,0,0,.9)}
+#mic:active{transform:scale(.94)}
+.as-chat{display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow-y:auto;padding:2px 0 12px}
+.bol{max-width:86%;padding:10px 13px;border-radius:16px;font-size:14.5px;line-height:1.4;animation:fade .2s ease}
+.bol.eu{align-self:flex-end;background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;border-bottom-right-radius:5px}
+.bol.ai{align-self:flex-start;background:var(--s2);border:1px solid var(--bd);border-bottom-left-radius:5px}
+.bol.ok{border-color:rgba(34,197,94,.45);background:rgba(34,197,94,.1)}
+.mic-big{width:78px;height:78px;border-radius:50%;margin:6px auto 4px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--pri),var(--pri2));box-shadow:0 14px 34px -12px rgba(109,124,255,.95)}
+.mic-big svg{width:34px;height:34px}
+.mic-big.on{animation:ouvindo 1.2s infinite}
+@keyframes ouvindo{0%{box-shadow:0 0 0 0 rgba(139,92,246,.6)}70%{box-shadow:0 0 0 18px rgba(139,92,246,0)}100%{box-shadow:0 0 0 0 rgba(139,92,246,0)}}
+.as-st{text-align:center;color:var(--mu);font-size:13px;min-height:18px;margin-bottom:10px}
+.as-ex{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:12px}
+.as-ex button{font-size:12.5px;padding:7px 11px;border-radius:999px;background:var(--s2);border:1px solid var(--bd);color:#C2CBDD}
 /* nav */
 #nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(10,14,22,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--bd);padding:6px 8px calc(8px + var(--safe-b))}
 #nav .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
@@ -295,6 +312,7 @@ textarea.inp{min-height:70px;resize:vertical}
 <body>
 <div id="app"><div id="tela"></div></div>
 <button id="fab" aria-label="Adicionar"></button>
+<button id="mic" aria-label="Assistente de voz"></button>
 <nav id="nav"><div class="in">
   <button data-t="cal"><span class="pill" data-ic="cal"></span>Calendário</button>
   <button data-t="agenda"><span class="pill" data-ic="list"></span>Agenda</button>
@@ -342,6 +360,7 @@ const P={
  zap:'<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
  clip:'<rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/>',
  arrowUp:'<path d="m18 15-6-6-6 6"/>',arrowDn:'<path d="m6 9 6 6 6-6"/>',logIn:'<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="m10 17 5-5-5-5M15 12H3"/>',logOut:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/>',
+ mic:'<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4M8 22h8"/>',
  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'
 };
 const ic=(n,s)=>`<svg class="i" viewBox="0 0 24 24"${s?` style="width:${s}px;height:${s}px"`:''}>${P[n]||''}</svg>`;
@@ -491,7 +510,7 @@ $('#fab').innerHTML=ic('plus');
 $('#fab').onclick=()=>{vibrar();formEvento(null,tab==='cal'?sel:hojeStr())};
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>irTab(b.dataset.t));
 function irTab(t){tab=t;window.scrollTo(0,0);render()}
-function render(){document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));marcarBadge();$('#fab').style.display=(tab==='cal'||tab==='agenda')?'':'none';
+function render(){document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));marcarBadge();$('#fab').style.display=(tab==='cal'||tab==='agenda')?'':'none';$('#mic').style.display=(tab==='cal'||tab==='agenda')?'':'none';
  if(tab!=='check')ckEdit=false;
  const t=$('#tela');t.innerHTML={cal:telaCal,agenda:telaAgenda,check:telaCheck,resumo:telaResumo,ajustes:telaAjustes}[tab]();t.firstElementChild&&t.firstElementChild.classList.add('fade');ligar[tab]&&ligar[tab]()}
 const ligar={};
@@ -522,7 +541,7 @@ function gradeHTML(){
  for(let i=0;i<rows*7;i++){const d=addD(start,i),[,m,dd]=parts(d),g=getDia(d),evs=eventosDoDia(d),fer=feriado(d);
   const mud=S.escalas.some(e=>e.inicio===d&&e!==primeira);
   const cls=['cel',g.trabalha?'trab':'',g.trabalha&&g.especial?'esp':'',m!==vM?'fora':'',d<h0?'pass':'',d===h0?'hoje':'',d===sel?'sel':'',fer?'fer':''].join(' ');
-  h+=`<button class="${cls}" data-d="${d}"><span class="n">${dd}</span>${g.trabalha?`<span class="hr">${hc(g.entrada)}–${hc(g.saida)}</span>`:''}<span class="dots">${evs.slice(0,3).map(e=>`<i style="background:${(TIPOS[e.tipo]||TIPOS.outro).cor}"></i>`).join('')}</span>${g.excecao?'<b class="mk"></b>':''}${pagamentoNoDia(d)?'<span class="pag">💰</span>':''}${mud?'<b class="mud"></b>':''}</button>`}
+  h+=`<button class="${cls}" data-d="${d}"><span class="n">${dd}</span>${g.trabalha?`<span class="hr">${hc(g.entrada)}–${hc(g.saida)}</span>`:''}${evs[0]?`<span class="evc" style="background:${(TIPOS[evs[0].tipo]||TIPOS.outro).cor}">${esc(evs[0].titulo)}</span>`:''}<span class="dots">${evs.slice(1,4).map(e=>`<i style="background:${(TIPOS[e.tipo]||TIPOS.outro).cor}"></i>`).join('')}</span>${g.excecao?'<b class="mk"></b>':''}${pagamentoNoDia(d)?'<span class="pag">💰</span>':''}${mud?'<b class="mud"></b>':''}</button>`}
  return h}
 /* ---------- PAGAMENTO (Nº dia útil do mês seguinte) ---------- */
 function diaUtil(y,m,n){const f=feriados(y);let c=0;for(let d=1;d<=31;d++){const s=ds(y,m,d);if(parts(s)[1]!==m||d>new Date(y,m,0).getDate())break;if(wd(s)===0)continue;const fe=f[s];if(fe&&fe!=='Carnaval')continue;if(++c>=n)return s}return ds(y,m,new Date(y,m,0).getDate())}
@@ -884,6 +903,99 @@ function desenharAjuste(){
     S.excecoes[d]={tipo:'trabalho',entrada:A.entrada,saida:A.saida,nota:A.nota}}}
   salvar();vibrar();fecharSheet();render();toast(A.tipo==='escala'?'Dia voltou a seguir a escala':n?`${n+1} dias ajustados`:'Dia ajustado')})}
 
+/* ============ ASSISTENTE DE VOZ ============ */
+const NUMS={zero:0,um:1,uma:1,dois:2,duas:2,'três':3,tres:3,quatro:4,cinco:5,seis:6,sete:7,oito:8,nove:9,dez:10,onze:11,doze:12,treze:13,quatorze:14,catorze:14,quinze:15,dezesseis:16,dezessete:17,dezoito:18,dezenove:19,vinte:20,'vinte e um':21,'vinte e uma':21,'vinte e dois':22,'vinte e duas':22,'vinte e três':23,'vinte e tres':23,'vinte e quatro':24,'vinte e cinco':25,'vinte e seis':26,'vinte e sete':27,'vinte e oito':28,'vinte e nove':29,trinta:30,'trinta e um':31,primeiro:1};
+const MES_IDX={janeiro:1,fevereiro:2,'março':3,marco:3,abril:4,maio:5,junho:6,julho:7,agosto:8,setembro:9,outubro:10,novembro:11,dezembro:12};
+const DIA_IDX={domingo:0,segunda:1,'terça':2,terca:2,quarta:3,quinta:4,sexta:5,'sábado':6,sabado:6};
+function normTxt(t){t=' '+String(t||'').toLowerCase().replace(/[.,!?;]/g,' ').replace(/\s+/g,' ')+' ';
+ Object.keys(NUMS).sort((a,b)=>b.length-a.length).forEach(k=>{t=t.replace(new RegExp(' '+k+' ','g'),' '+NUMS[k]+' ')});
+ return t.replace(/meio[- ]dia/g,' 12h ').replace(/meia[- ]noite/g,' 0h ').replace(/\s+/g,' ')}
+function extrairData(t){const h=hojeStr(),[hy,hm,hd]=parts(h);let m,r=null,txt=t;const tira=x=>{txt=txt.replace(x,' ')};
+ if((m=t.match(/ depois de amanh[ãa] /))){r=addD(h,2);tira(m[0])}
+ else if((m=t.match(/ amanh[ãa] /))){r=addD(h,1);tira(m[0])}
+ else if((m=t.match(/ hoje /))){r=h;tira(m[0])}
+ if(!r&&(m=t.match(/ (?:no |na |para o |pro |pra |pro )?(?:dia )?(\d{1,2})\s*(?:\/|de )\s*(\d{1,2}|janeiro|fevereiro|março|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro)(?:\s*(?:\/|de )\s*(\d{4}))? /))){
+  const d=+m[1],mo=isNaN(+m[2])?MES_IDX[m[2]]:+m[2];let y=m[3]?+m[3]:hy;if(!m[3]&&ds(y,mo,Math.min(d,28))<ds(hy,hm,1))y++;if(mo>=1&&mo<=12&&d>=1&&d<=31){r=ds(y,mo,Math.min(d,new Date(y,mo,0).getDate()));tira(m[0])}}
+ if(!r&&(m=t.match(/ (?:no |na |pro |pra )?dia (\d{1,2}) /))){const d=+m[1];let y=hy,mo=hm;if(d<hd){[y,mo]=mesProx(hy,hm)}if(d>=1&&d<=31){r=ds(y,mo,Math.min(d,new Date(y,mo,0).getDate()));tira(m[0])}}
+ if(!r&&(m=t.match(/ (?:n[oa] |nest[ea] |pr[oó]xim[oa] |essa |esse |dia de )*(domingo|segunda|terça|terca|quarta|quinta|sexta|sábado|sabado)(?:[- ]feira)?(?: que vem)? /))){const w=DIA_IDX[m[1]];let n=(w-wd(h)+7)%7;if(n===0||/pr[oó]xim|que vem/.test(m[0]))n=n||7;r=addD(h,n);tira(m[0])}
+ return{data:r,resto:txt}}
+function hm(h,mi,per){h=+h;mi=+(mi||0);if(per){if(/tarde|noite/.test(per)&&h<12)h+=12;if(/manh/.test(per)&&h===12)h=0}if(h>23||mi>59)return null;return pad(h)+':'+pad(mi)}
+function extrairHoras(t){let txt=t,m;const T=`(\\d{1,2})(?:\\s*(?:h|:|horas?)\\s*(\\d{2})?)?(?:\\s*e meia)?(?:\\s*(?:da|de) (manhã|manha|tarde|noite))?`;
+ const meia=x=>/e meia/.test(x);
+ if((m=t.match(new RegExp(` (?:das|de|da|entre) ${T}\\s*(?:às|as|até|ate|a|e) ${T} `)))){
+  let a=hm(m[1],meia(m[0].split(/ (?:às|as|até|ate|a|e) (?=\d)/)[0])?30:m[2],m[3]||m[6]),b=hm(m[4],m[5],m[6]);
+  if(a&&b&&b<=a&&+m[4]<12&&!m[6])b=hm(+m[4]+12,m[5]);txt=txt.replace(m[0],' ');return{ini:a,fim:b,resto:txt}}
+ if((m=t.match(new RegExp(` (?:às|as|a partir das|a partir da|depois das|para as|pras|pra) ${T} `)))){const a=hm(m[1],/e meia/.test(m[0])?30:m[2],m[3]);txt=txt.replace(m[0],' ');return{ini:a,fim:null,resto:txt}}
+ if((m=t.match(new RegExp(` ${T} `)))&&/h|:|hora/.test(m[0])){const a=hm(m[1],m[2],m[3]);txt=txt.replace(m[0],' ');return{ini:a,fim:null,resto:txt}}
+ return{ini:null,fim:null,resto:txt}}
+function detectarTipo(t){if(/consulta|m[ée]dic|dentist|exame|psic[oó]log|fisio|hospital|cl[ií]nica|nutri/.test(t)&&!/plant[ãa]o extra|servi[çc]o/.test(t))return'consulta';if(/plant[ãa]o extra|servi[çc]o|freela|bico|extra/.test(t))return'servico';return'compromisso'}
+function limparTitulo(t){const stop=/\b(me |por favor|pode |você |voce |quero |queria |preciso |agend[ae]r?|agenda|marc[ae]r?|marca|anot[ae]r?|adicion[ae]r?|coloc[ae]r?|cri[ae]r?|um |uma |evento|compromisso de|lembrete|no calend[aá]rio|na agenda|pra mim|para mim)\b/g;
+ let x=t.replace(stop,' ').replace(/\b(o dia todo|o dia inteiro|dia inteiro|dia todo)\b/g,' ').replace(/\s+/g,' ').trim();
+ x=x.replace(/^(de |da |do |no |na |para |pra |pro |o |a |e |que )+/,'').replace(/( de| da| do| no| na| para| pra| e| às| as)+$/,'').trim();
+ return x?x.charAt(0).toUpperCase()+x.slice(1):''}
+const AS={msgs:[],ouvindo:false,pend:null,ultimo:null};
+function dataFalada(d){const[,m,dd]=parts(d);const r=relDia(d);return (r==='Hoje'||r==='Amanhã'?r.toLowerCase()+', ':DIAS[wd(d)].toLowerCase()+', ')+dd+' de '+MESES[m-1].toLowerCase()}
+const horaFalada=x=>{const[h,m]=x.split(':');return (+h)+'h'+(m!=='00'?m:'')};
+function asAbrir(){if(!S.onboarding)return;AS.pend=null;if(!AS.msgs.length)AS.msgs.push({q:'ai',t:'Oi! Diga o que quer agendar. Ex.: "agende academia dia 28 de novembro".'});
+ abrirSheet(`<div class="alca"></div><div class="sh-h"><div><h3>Assistente</h3><p>Fale ou digite um compromisso</p></div><button class="btn-ic" id="xAs">${ic('x')}</button></div>
+ <div class="as-chat" id="asChat"></div><div class="as-ex" id="asEx">${['Agende academia amanhã','Consulta no dentista sexta às 14h','O que tenho amanhã?','Quando é meu próximo plantão?','Quando eu recebo?'].map(x=>`<button>${x}</button>`).join('')}</div>
+ <button class="mic-big" id="asMic">${ic('mic')}</button><div class="as-st" id="asSt">Toque no microfone para falar</div>
+ <div class="ck-add"><input class="inp" id="asTx" placeholder="Ou digite aqui…"><button class="btn pri" id="asEnv">${ic('chevR',18)}</button></div>`,{onClose:()=>{AS.pend=null;try{NAT&&NAT.pararFala&&NAT.pararFala()}catch(e){}setTimeout(render,280)}});
+ $('#sheetIn').dataset.f='as';asRender();
+ $('#xAs').onclick=fecharSheet;$('#asMic').onclick=()=>asOuvir();
+ const env=()=>{const v=$('#asTx').value.trim();if(!v)return;$('#asTx').value='';asEntrada(v)};$('#asEnv').onclick=env;$('#asTx').onkeydown=e=>{if(e.key==='Enter')env()};
+ $('#asEx').onclick=e=>{const b=e.target.closest('button');b&&asEntrada(b.textContent)};
+ setTimeout(()=>asOuvir(),350)}
+function asRender(){const c=$('#asChat');if(!c)return;c.innerHTML=AS.msgs.slice(-12).map(m=>`<div class="bol ${m.q}${m.ok?' ok':''}">${esc(m.t)}${m.undo?`<div style="margin-top:8px;display:flex;gap:6px"><button class="btn sm" data-undo="${m.undo}">${ic('x',14)} Desfazer</button><button class="btn sm" data-edit="${m.undo}">${ic('edit',14)} Editar</button></div>`:''}</div>`).join('');c.scrollTop=c.scrollHeight;
+ c.onclick=e=>{const u=e.target.closest('[data-undo]'),ed=e.target.closest('[data-edit]');
+  if(u){S.eventos=S.eventos.filter(x=>x.id!==u.dataset.undo);salvar();AS.msgs.forEach(m=>{if(m.undo===u.dataset.undo)m.undo=null});AS.msgs.push({q:'ai',t:'Desfeito. Removi o evento.'});asRender();render()}
+  if(ed){const ev=S.eventos.find(x=>x.id===ed.dataset.edit);if(ev){fecharSheet();setTimeout(()=>formEvento(ev),300)}}};
+ const ex=$('#asEx');ex&&(ex.style.display=AS.msgs.length>1?'none':'')}
+function asStatus(t,on){const s=$('#asSt');s&&(s.textContent=t);const m=$('#asMic');m&&m.classList.toggle('on',!!on);AS.ouvindo=!!on}
+let asRecWeb=null;
+function asOuvir(){if(AS.ouvindo)return;
+ if(NAT&&NAT.ouvir){asStatus('Ouvindo…',true);try{NAT.ouvir(AS.pend?'Responda…':'Fale seu compromisso')}catch(e){asStatus('Microfone indisponível');}return}
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){asStatus('Voz indisponível aqui — digite abaixo');return}
+ asRecWeb=new SR();asRecWeb.lang='pt-BR';asRecWeb.interimResults=false;asStatus('Ouvindo…',true);
+ asRecWeb.onresult=e=>window.aoOuvir(e.results[0][0].transcript);asRecWeb.onerror=()=>window.aoOuvir(null);asRecWeb.onend=()=>{if(AS.ouvindo)asStatus('Toque no microfone para falar')};try{asRecWeb.start()}catch(e){}}
+window.aoOuvir=function(txt){asStatus('Toque no microfone para falar');if(!txt){if(AS.pend)asStatus('Não ouvi. Toque no microfone ou digite.');return}asEntrada(txt)};
+function asFalar(t,depois){AS.msgs.push({q:'ai',t});asRender();AS.aposFala=depois||null;
+ if(NAT&&NAT.falar){try{NAT.falar(t);return}catch(e){}}
+ if(window.speechSynthesis){try{const u=new SpeechSynthesisUtterance(t);u.lang='pt-BR';u.onend=()=>window.aoFalarFim();speechSynthesis.cancel();speechSynthesis.speak(u);return}catch(e){}}
+ setTimeout(()=>window.aoFalarFim(),300)}
+window.aoFalarFim=function(){const f=AS.aposFala;AS.aposFala=null;if(f==='ouvir'&&sheetAberto&&$('#sheetIn').dataset.f==='as')setTimeout(asOuvir,250)};
+function asEntrada(txt){AS.msgs.push({q:'eu',t:txt});asRender();vibrar();const t=normTxt(txt);
+ if(/^ (cancela|cancelar|esquece|deixa pra l[aá]|nada) /.test(t)){AS.pend=null;return asFalar('Tudo bem, cancelei.')}
+ // continuação de uma pergunta pendente
+ if(AS.pend){const P=AS.pend;
+  if(P.falta==='data'){const d=extrairData(t);if(!d.data)return asFalar('Não entendi a data. Pode dizer, por exemplo, "dia 28 de novembro" ou "sexta"?','ouvir');P.ev.inicio=d.data;const h=extrairHoras(d.resto);if(h.ini){P.ev.horaIni=h.ini;if(h.fim)P.ev.horaFim=h.fim}return asContinuar()}
+  if(P.falta==='horas'||P.falta==='fim'){if(/ (o )?dia (todo|inteiro) /.test(t)){P.ev.diaInteiro=true;return asContinuar()}
+   let h=extrairHoras(t);if(!h.ini){const nn=t.match(/ (\d{1,2})(?:h|:(\d{2}))?(?: (?:da|de) (manhã|manha|tarde|noite))? (?:às|as|até|ate|a|e) (\d{1,2})(?:h|:(\d{2}))?(?: (?:da|de) (manhã|manha|tarde|noite))? /);if(nn){h={ini:hm(nn[1],nn[2],nn[3]||nn[6]),fim:hm(nn[4],nn[5],nn[6])};if(h.fim&&h.fim<=h.ini&&+nn[4]<12)h.fim=hm(+nn[4]+12,nn[5])}else{const um=t.match(/ (\d{1,2})(?:h|:(\d{2}))?(?: (?:da|de) (manhã|manha|tarde|noite))? /);if(um)h={ini:hm(um[1],um[2],um[3]),fim:null}}}
+   if(P.falta==='fim'){const f=h.fim||h.ini;if(!f)return asFalar('Não entendi. Até que horas?','ouvir');P.ev.horaFim=f<=P.ev.horaIni&&+f.slice(0,2)<12?pad(+f.slice(0,2)+12)+f.slice(2):f;return asContinuar()}
+   if(!h.ini)return asFalar('Não entendi o horário. Pode dizer, por exemplo, "das 18 às 20"?','ouvir');P.ev.horaIni=h.ini;if(h.fim)P.ev.horaFim=h.fim;return asContinuar()}}
+ // perguntas
+ if(/ (o que|oque|que) (eu )?(tenho|tem|vou fazer)|minha agenda|meu dia /.test(t)){const d=extrairData(t).data||hojeStr();const ev=eventosDoDia(d),g=getDia(d);
+  const p=[];p.push(g.trabalha?`plantão das ${horaFalada(g.entrada)} às ${horaFalada(g.saida)}`:'folga');ev.forEach(e=>p.push(e.titulo+(e.diaInteiro?'':' às '+horaFalada(e.horaIni||'08:00'))));
+  return asFalar(`${dataFalada(d).replace(/^./,c=>c.toUpperCase())}: ${p.join(', ')}.`)}
+ if(/ (pr[oó]ximo|quando (é|e) (o )?meu|quando eu trabalho|quando trabalho)/.test(t)&&/plant[ãa]o|trabalho/.test(t)){const p=proximoPlantao();return asFalar(p?`Seu próximo plantão é ${dataFalada(p.data)}, das ${horaFalada(p.entrada)} às ${horaFalada(p.saida)}.`:'Não encontrei plantões próximos.')}
+ if(/ (quando (eu )?(recebo|vou receber|cai o pagamento|pagam)|pagamento|sal[aá]rio) /.test(t)){if(!S.config.pag.ativo)return asFalar('O dia de pagamento está desligado nos Ajustes.');const p=proximoPagamento();return asFalar(`Você recebe ${dataFalada(p.data)}, ${p.valor?brl(p.valor)+', ':''}referente aos ${p.plantoes} plantões de ${MESES[p.refM-1].toLowerCase()}.`)}
+ // novo evento
+ const d=extrairData(t),h=extrairHoras(d.resto),titulo=limparTitulo(h.resto);
+ if(!titulo)return asFalar('O que você quer agendar? Diga, por exemplo, "academia amanhã das 18 às 20".','ouvir');
+ const tipo=detectarTipo(t);
+ AS.pend={ev:{id:uid(),tipo,titulo,inicio:d.data||null,dias:1,diaInteiro:/ (o )?dia (todo|inteiro) /.test(t),horaIni:h.ini||null,horaFim:h.fim||null,local:'',valor:'',pago:false,nota:'Criado pelo assistente de voz',lembretes:TIPOS[tipo].lemb.slice()}};
+ asContinuar()}
+function asContinuar(){const P=AS.pend,e=P.ev;
+ if(!e.inicio){P.falta='data';return asFalar(`${e.titulo}: para qual dia?`,'ouvir')}
+ if(!e.diaInteiro&&!e.horaIni){P.falta='horas';return asFalar(`Certo, ${e.titulo} ${dataFalada(e.inicio)}. De que horas até que horas?`,'ouvir')}
+ if(!e.diaInteiro&&!e.horaFim){P.falta='fim';return asFalar(`Começa às ${horaFalada(e.horaIni)}. Até que horas?`,'ouvir')}
+ if(e.diaInteiro){e.horaIni='08:00';e.horaFim='18:00'}
+ S.eventos.push(e);salvar();AS.pend=null;vibrar();
+ const cf=conflitos(e);const quando=e.diaInteiro?'o dia todo':`das ${horaFalada(e.horaIni)} às ${horaFalada(e.horaFim)}`;
+ asFalar(`Pronto! Agendei ${e.titulo} para ${dataFalada(e.inicio)}, ${quando}.${cf.length?' Atenção: nesse horário você está de plantão.':''}`);
+ const last=AS.msgs[AS.msgs.length-1];last.ok=true;last.undo=e.id;asRender();sel=e.inicio;[vY,vM]=parts(e.inicio)}
+$('#mic').innerHTML=ic('mic',22);$('#mic').onclick=()=>{vibrar();asAbrir()};
+
 /* ============ BACKUP ============ */
 function exportar(){const j=JSON.stringify(S,null,1),nome=`prismo-escala-${hojeStr()}.json`;
  if(NAT&&NAT.exportar){NAT.exportar(j,nome);return}const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([j],{type:'application/json'}));a.download=nome;a.click();toast('Backup exportado')}
@@ -916,7 +1028,7 @@ function desenharPermOb(){const el=$('#obPerm');if(!el)return;const p=statusPerm
 /* ============ ATUALIZAÇÕES ============ */
 let atu=null,atuManual=false,atuBaixando=false,atuEsperaPerm=false;
 const LS=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}};
-function versaoApp(){try{return NAT&&NAT.versao?NAT.versao():'1.3'}catch(e){return'1.3'}}
+function versaoApp(){try{return NAT&&NAT.versao?NAT.versao():'1.4'}catch(e){return'1.4'}}
 function textoUltimaVerif(){const t=+LS('atu_ultima')||0;if(!t)return'nunca verificado';const m=(Date.now()-t)/6e4;return m<2?'verificado agora':m<60?`verificado há ${Math.round(m)} min`:m<1440?`verificado há ${Math.round(m/60)} h`:`verificado em ${fmtD(msDate(t))}`}
 function marcarBadge(){const p=document.querySelector('#nav [data-t="ajustes"] .pill');if(!p)return;let b=p.querySelector('.bdg');const on=!!(atu&&atu.nova);if(on&&!b){b=document.createElement('i');b.className='bdg';p.appendChild(b)}if(!on&&b)b.remove()}
 function checarAtualizacao(manual){atuManual=!!manual;
@@ -956,7 +1068,7 @@ function autoChecar(){if(!NAT||S.config.autoAtualizar===false||!S.onboarding)ret
 /* ============ CALLBACKS NATIVOS ============ */
 window.aoPermissao=()=>{desenharPermOb();if(tab==='ajustes'&&!sheetAberto)render()};
 window.abrirAba=a=>{if(!S.onboarding)return;if(sheetAberto)fecharSheet();tab=a||'cal';window.scrollTo(0,0);render()};
-window.aoVoltarAoApp=()=>{cache.clear();if(atuEsperaPerm&&atu&&sheetAberto&&$('#sheetIn').dataset.f==='upd'){let ok=false;try{ok=NAT.podeInstalar()}catch(e){}if(ok)iniciarAtualizacao(atu);return}if(atuBaixando)return;desenharPermOb();if(!sheetAberto)render();agendarNotificacoes()};
+window.aoVoltarAoApp=()=>{if(sheetAberto&&$('#sheetIn').dataset.f==='as')return;cache.clear();if(atuEsperaPerm&&atu&&sheetAberto&&$('#sheetIn').dataset.f==='upd'){let ok=false;try{ok=NAT.podeInstalar()}catch(e){}if(ok)iniciarAtualizacao(atu);return}if(atuBaixando)return;desenharPermOb();if(!sheetAberto)render();agendarNotificacoes()};
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!NAT)window.aoVoltarAoApp()});
 
 /* ============ INÍCIO ============ */
